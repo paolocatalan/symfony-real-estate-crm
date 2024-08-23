@@ -5,6 +5,7 @@
 {% block body %}
     <img src="{{ asset('uploads/images/' ~ property.imagePath) }}" width="256">
     <p>Property ID: {{ property.id }}</p>
+    <p>Price: {{ price }}</p>
     <p>Address: {{ property.address }}</p>
     <p>City: {{ property.city }}</p>
     <p>Zip Code: {{ property.zipCode }}</p>

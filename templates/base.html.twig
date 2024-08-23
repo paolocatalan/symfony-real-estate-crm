@@ -19,8 +19,6 @@
     {% for message in app.flashes('message') %}
         <p><em>{{ message }}</em></p>
     {% endfor %}
-    {% block body %}
-
-    {% endblock %}
+    {% block body %}{% endblock %}
   </body>
 </html>

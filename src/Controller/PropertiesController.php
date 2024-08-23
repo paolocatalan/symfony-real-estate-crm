@@ -12,13 +12,19 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Service\ImageUploader;
+use App\Service\Property\MarketValue;
+use App\Service\Property\PropertyType\Single;
 
 class PropertiesController extends AbstractController
 {
     private $entityManager;
     private $propertyRepository;
+    private $propertyInterface;
 
-    public function __construct(PropertyRepository $propertyRepository, EntityManagerInterface $entityManager)
+    public function __construct(
+        PropertyRepository $propertyRepository,
+        EntityManagerInterface $entityManager,
+    )
     {
         $this->propertyRepository = $propertyRepository;
         $this->entityManager = $entityManager;
@@ -49,16 +55,9 @@ class PropertiesController extends AbstractController
             $imagePath = $form->get('image_path')->getData();
             if ($imagePath) {
                 $newFileName = $imageUploader->upload($imagePath);
-                // $newFileName = uniqid() . '.' . $imagePath->guessExtension();
-
-                // try {
-                //     $imagePath->move($brochuresDirectory, $newFileName);
-                // } catch (FileException $e) {
-                //     return new Response($e->getMessage());
-                // }
-
                 $newProperty->setImagePath($newFileName);
             }
+
             $this->entityManager->persist($newProperty);
             $this->entityManager->flush();
 
@@ -77,8 +76,12 @@ class PropertiesController extends AbstractController
     {
         $property = $this->propertyRepository->find($id);
 
+        $marketValue = new MarketValue(new Single($property));
+        $price = $marketValue->compute();
+
         return $this->render('show.html.twig', [
-            'property' => $property
+            'property' => $property,
+            'price' => $price
         ]);
     }
 
