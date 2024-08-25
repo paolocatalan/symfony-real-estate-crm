@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Config\PropertyTypeEnum;
 use App\Repository\PropertyRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -34,6 +35,18 @@ class Property
 
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     private ?Broker $broker = null;
+
+    #[ORM\Column(type: 'string')]
+    private ?string $type;
+
+    #[ORM\Column]
+    private ?int $bedrooms = null;
+
+    #[ORM\Column]
+    private ?int $bathrooms = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $sqft = null;
 
     public function getId(): ?int
     {
@@ -120,6 +133,54 @@ class Property
     public function setBroker(?Broker $broker): static
     {
         $this->broker = $broker;
+
+        return $this;
+    }
+
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): static
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function getBedrooms(): ?int
+    {
+        return $this->bedrooms;
+    }
+
+    public function setBedrooms(int $bedrooms): static
+    {
+        $this->bedrooms = $bedrooms;
+
+        return $this;
+    }
+
+    public function getBathrooms(): ?int
+    {
+        return $this->bathrooms;
+    }
+
+    public function setBathrooms(int $bathrooms): static
+    {
+        $this->bathrooms = $bathrooms;
+
+        return $this;
+    }
+
+    public function getSqft(): ?string
+    {
+        return $this->sqft;
+    }
+
+    public function setSqft(string $sqft): static
+    {
+        $this->sqft = $sqft;
 
         return $this;
     }

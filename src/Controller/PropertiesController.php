@@ -12,8 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Service\ImageUploader;
-use App\Service\Property\MarketValue;
-use App\Service\Property\PropertyType\Single;
+use App\Service\Property\PropertyChecker;
 
 class PropertiesController extends AbstractController
 {
@@ -76,8 +75,7 @@ class PropertiesController extends AbstractController
     {
         $property = $this->propertyRepository->find($id);
 
-        $marketValue = new MarketValue(new Single($property));
-        $price = $marketValue->compute();
+        $price = PropertyChecker::process($property);
 
         return $this->render('show.html.twig', [
             'property' => $property,
