@@ -5,10 +5,16 @@
 {% block body %}
     <img src="{{ asset('uploads/images/' ~ property.imagePath) }}" width="256">
     <p>Property ID: {{ property.id }}</p>
-    <p>Price: {{ price }}</p>
     <p>Address: {{ property.address }}</p>
     <p>City: {{ property.city }}</p>
     <p>Zip Code: {{ property.zipCode }}</p>
+    <p>Build Year: {{ property.getBuildYear|date('Y') }}</p>
+    <p>Bedrooms: {{ property.bedrooms }}</p>
+    <p>Bathrooms: {{ property.bathrooms }}</p>
+    <p>Interior: {{ property.sqft }}</p>
     <p>Description:<br>{{ property.description }}</p>
-    <p>Build Year: {{ property.getBuildYear|date('Y-m-d') }}</p>
+
+    <pre>
+        {{ dump(value) }}
+    </pre>
 {% endblock %}

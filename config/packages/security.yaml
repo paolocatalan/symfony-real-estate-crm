@@ -39,8 +39,8 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        - { path: ^/properties/create, roles: ROLE_ADMIN }
-        - { path: ^/properties/[0-9]+/edit, roles: ROLE_USER }
+        - { path: ^/properties/create, roles: [ROLE_ADMIN, BROKER] }
+        - { path: ^/properties/[0-9]+/edit, roles: [ROLE_ADMIN, BROKER] }
         # - { path: ^/profile, roles: ROLE_USER }
 
 when@test:

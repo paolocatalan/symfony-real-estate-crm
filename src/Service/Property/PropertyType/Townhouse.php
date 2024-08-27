@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace App\Service\Property\PropertyType;
 
@@ -8,43 +8,40 @@ use App\Service\Property\PropertyInterface;
 
 class Townhouse implements PropertyInterface
 {
-    public $property;
-
-    public function __construct(object|null $property)
+    public function compute($property): array
     {
-        $this->property = $property;
+
+        // Adjust for Differences
+
+        return [
+            'price' => 232000,
+            'priceRangeHigh' => 251000,
+            'priceRangeHigh' => 251000
+        ];
     }
 
-    public function calculate($priceStartsAt): float
+    protected function geoCoding(): array
     {
-        $value = $priceStartsAt + $this->geography($this->property) + $this->valuation($this->property) + $this->financing($this->property); 
+        // get longtitude and latitude
+        // https://apidocs.geoapify.com/playground/geocoding/
 
-        return $value;
+        return [];
     }
 
-    private function geography($property): float
+    protected function getPropertyListingsNearBy($address): array
     {
-        // Get API's data
-        $zipCode = $property->getZipCode();
-        $jackUpThePrice = array("786", "9866", "8797", "9865");
-        if (in_array($zipCode, $jackUpThePrice) ) {
-            return rand(900, 2000);
-        }
-        return rand(100, 900);
+        // get the property listings nearby using geoCoding method
+        // get the market value
+        
+        return [];
     }
 
-    private function valuation($property): float
+    protected function findPropertyMatchTypes($property): array
     {
-        // Get API's data
-        // $property['characteristics']
-        return rand(100, 900);
-    }
+        // find the most similar sale or rental listings near this property that match its type, size, attributes, age, etc.
+        // type, size, and attributes
 
-    private function financing($property): float
-    {
-        // Get API's data
-        // $property
-        return rand(100, 900);
+        return [];
     }
 
 }

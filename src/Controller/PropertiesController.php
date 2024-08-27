@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Property;
 use App\Form\PropertyFormType;
 use App\Repository\PropertyRepository;
+use App\Service\GeoCoding;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -12,13 +13,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Service\ImageUploader;
-use App\Service\Property\PropertyChecker;
+use App\Service\Property\PropertyValuation;
 
 class PropertiesController extends AbstractController
 {
     private $entityManager;
     private $propertyRepository;
-    private $propertyInterface;
 
     public function __construct(
         PropertyRepository $propertyRepository,
@@ -50,7 +50,7 @@ class PropertiesController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $newProperty = $form->getData();
 
-            /** @var UploadedFile $brochureFile */
+            /** @var UploadedFile */
             $imagePath = $form->get('image_path')->getData();
             if ($imagePath) {
                 $newFileName = $imageUploader->upload($imagePath);
@@ -69,17 +69,17 @@ class PropertiesController extends AbstractController
             'form' => $form->createView()
         ]);
     }
-    
+
     #[Route('/properties/{id}', methods: ['GET'], name: 'show_property')]
     public function show($id): Response
     {
         $property = $this->propertyRepository->find($id);
 
-        $price = PropertyChecker::process($property);
+        $value = (new PropertyValuation($property))->calculate();
 
         return $this->render('show.html.twig', [
             'property' => $property,
-            'price' => $price
+            'value' => $value
         ]);
     }
 
@@ -93,7 +93,7 @@ class PropertiesController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $newProperty = $form->getData();
 
-            /** @var UploadedFile $brochureFile */
+            /** @var UploadedFile */
             $imagePath = $form->get('image_path')->getData();
             if ($imagePath) {
                 $newFileName = $imageUploader->upload($imagePath);
@@ -118,7 +118,7 @@ class PropertiesController extends AbstractController
     public function delete($id): Response
     {
         $property = $this->propertyRepository->find($id);
-        
+
         $this->entityManager->remove($property);
         $this->entityManager->flush();
 

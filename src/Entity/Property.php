@@ -24,20 +24,8 @@ class Property
     #[ORM\Column(length: 255)]
     private ?string $zip_code = null;
 
-    #[ORM\Column(type: Types::TEXT)]
-    private ?string $description = null;
-
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTimeInterface $build_year = null;
-
     #[ORM\Column(length: 255)]
-    private ?string $image_path = null;
-
-    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
-    private ?Broker $broker = null;
-
-    #[ORM\Column(type: 'string')]
-    private ?string $type;
+    private ?string $country = null;
 
     #[ORM\Column]
     private ?int $bedrooms = null;
@@ -47,6 +35,30 @@ class Property
 
     #[ORM\Column(length: 255)]
     private ?string $sqft = null;
+
+    #[ORM\Column(length: 255)]
+    private ?float $acre = null;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    private ?\DateTimeInterface $build_year = null;
+
+    #[ORM\Column(type: Types::TEXT)]
+    private ?string $feature = null;
+
+    #[ORM\Column(type: Types::TEXT)]
+    private ?string $description = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $image_path = null;
+
+    #[ORM\Column(type: 'string')]
+    private ?string $type;
+
+    #[ORM\Column(length: 255)]
+    private ?float $status = null;
+
+    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
+    private ?User $user = null;
 
     public function getId(): ?int
     {
@@ -89,62 +101,14 @@ class Property
         return $this;
     }
 
-    public function getDescription(): ?string
+    public function getCountry(): ?string
     {
-        return $this->description;
+        return $this->country;
     }
 
-    public function setDescription(string $description): static
+    public function setCountry(string $country): static
     {
-        $this->description = $description;
-
-        return $this;
-    }
-
-    public function getBuildYear(): ?\DateTimeInterface
-    {
-        return $this->build_year;
-    }
-
-    public function setBuildYear(\DateTimeInterface $build_year): static
-    {
-        $this->build_year = $build_year;
-
-        return $this;
-    }
-
-    public function getImagePath(): ?string
-    {
-        return $this->image_path;
-    }
-
-    public function setImagePath(string $image_path): static
-    {
-        $this->image_path = $image_path;
-
-        return $this;
-    }
-
-    public function getBroker(): ?Broker
-    {
-        return $this->broker;
-    }
-
-    public function setBroker(?Broker $broker): static
-    {
-        $this->broker = $broker;
-
-        return $this;
-    }
-
-    public function getType(): string
-    {
-        return $this->type;
-    }
-
-    public function setType(string $type): static
-    {
-        $this->type = $type;
+        $this->country = $country;
 
         return $this;
     }
@@ -181,6 +145,102 @@ class Property
     public function setSqft(string $sqft): static
     {
         $this->sqft = $sqft;
+
+        return $this;
+    }
+
+    public function getAcre(): ?float
+    {
+        return $this->acre;
+    }
+
+    public function setAcre(string $acre): static
+    {
+        $this->acre = $acre;
+
+        return $this;
+    }
+
+    public function getBuildYear(): ?\DateTimeInterface
+    {
+        return $this->build_year;
+    }
+
+    public function setBuildYear(\DateTimeInterface $build_year): static
+    {
+        $this->build_year = $build_year;
+
+        return $this;
+    }
+
+    public function getFeature(): ?string
+    {
+        return $this->feature;
+    }
+
+    public function setFeature(string $feature): static
+    {
+        $this->feature = $feature;
+
+        return $this;
+    }
+    
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(string $description): static
+    {
+        $this->description = $description;
+
+        return $this;
+    }
+
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): static
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+    
+    public function getImagePath(): ?string
+    {
+        return $this->image_path;
+    }
+
+    public function setImagePath(string $image_path): static
+    {
+        $this->image_path = $image_path;
+
+        return $this;
+    }
+    
+    public function getStatus(): ?float
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): static
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+    
+    public function getBroker(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setBroker(?User $user): static
+    {
+        $this->user = $user;
 
         return $this;
     }

@@ -34,6 +34,8 @@ class RegistrationController extends AbstractController
 
             // do anything else you need here, like send an email
 
+            // set to unverified, for control access
+
             return $this->redirectToRoute('properties');
         }
 

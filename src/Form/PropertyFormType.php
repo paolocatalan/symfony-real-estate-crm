@@ -27,8 +27,7 @@ class PropertyFormType extends AbstractType
             ->add('zip_code', TextType::class)
             ->add('description', TextareaType::class)
             ->add('build_year', DateType::class, [
-                    'widget' => 'choice',
-                    'input'  => 'datetime_immutable'
+                    'widget' => 'choice'
             ])
             ->add('image_path', FileType::class, array(
                 'required' => false,
