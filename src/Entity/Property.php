@@ -22,6 +22,9 @@ class Property
     private ?string $city = null;
 
     #[ORM\Column(length: 255)]
+    private ?string $state = null;
+
+    #[ORM\Column(length: 255)]
     private ?string $zip_code = null;
 
     #[ORM\Column(length: 255)]
@@ -55,7 +58,7 @@ class Property
     private ?string $type;
 
     #[ORM\Column(length: 255)]
-    private ?float $status = null;
+    private ?string $status = null;
 
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     private ?User $user = null;
@@ -85,6 +88,18 @@ class Property
     public function setCity(string $city): static
     {
         $this->city = $city;
+
+        return $this;
+    }
+
+    public function getState(): ?string
+    {
+        return $this->state;
+    }
+
+    public function setState(string $state): static
+    {
+        $this->state = $state;
 
         return $this;
     }
@@ -221,7 +236,7 @@ class Property
         return $this;
     }
     
-    public function getStatus(): ?float
+    public function getStatus(): ?string
     {
         return $this->status;
     }

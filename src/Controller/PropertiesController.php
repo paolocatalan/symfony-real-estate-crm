@@ -5,7 +5,6 @@ namespace App\Controller;
 use App\Entity\Property;
 use App\Form\PropertyFormType;
 use App\Repository\PropertyRepository;
-use App\Service\GeoCoding;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;

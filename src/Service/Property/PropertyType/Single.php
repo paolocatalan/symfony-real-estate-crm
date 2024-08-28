@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\Service\Property\PropertyType;
 
+use App\Service\Property\PropertyBase;
 use App\Service\Property\PropertyInterface;
 
-class Single implements PropertyInterface
+class Single extends PropertyBase implements PropertyInterface
 {
     public function compute($property): array
     {
-        $formattedAddress = $property->getAddress() . ', ' . $property->getCity() . ', ' . $property->getZipCode() . ', ' . $property->getCountry();
-
-        $geocodeAddress = $this->forwardGeocoding($formattedAddress);
+        $geocodeAddress = $this->forwardGeocoding($property);
 
         $comparables = $this->comparableListings($geocodeAddress);
 
@@ -26,36 +25,6 @@ class Single implements PropertyInterface
             'longtitude' => $geocodeAddress['lon'],
             'comparables' => $comparables
         ];
-    }
-
-    protected function forwardGeocoding($address): array
-    {
-        $handle = curl_init();
-
-        $params = [
-            'text' => $address,
-            'limit' => '1',
-            'apiKey' => $_ENV['GEOAPIFY']
-        ];
-        $url = 'https://api.geoapify.com/v1/geocode/search?'. http_build_query($params);
-
-        curl_setopt($handle, CURLOPT_URL, $url);
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        
-        $response = curl_exec($handle);
-        
-        $retry = 0;
-        while(curl_errno($handle) == 28 && $retry < 3) {
-            sleep(1);
-            $response = curl_exec($handle);
-            $retry++;
-        }
-
-        $geocodeAddress = json_decode($response, true);
-
-        curl_close($handle);
-
-        return $geocodeAddress['features'][0]['properties'];
     }
 
     protected function comparableListings($geocodeAddress): array
@@ -98,10 +67,10 @@ class Single implements PropertyInterface
                 'bedrooms' => mt_rand(1, 3),
                 'banthrooms' => mt_rand(1, 2),
                 'squareFootage' => mt_rand(1000, 1800),
-                'price' => rand(19001, 209999),
+                'price' => mt_rand(19001, 209999),
                 'listedDate' => '2023-02-18T00:00:00.000Z',
                 'lastSeenDate' => '2023-02-23T00:00:00.000Z',
-                'daysOld' => 5,
+                'daysOld' => mt_rand(1, 30),
                 'distance' => 0.2009,
                 'correlation' => 0.9891
             ));
@@ -117,9 +86,9 @@ class Single implements PropertyInterface
         // Adjustments Factor
 
         return [
-            'price' => rand(19001, 209999),
-            'priceRangeLow' => rand(150000, 190000),
-            'priceRangeHigh' => rand(210000, 250000)
+            'price' => mt_rand(19001, 209999),
+            'priceRangeLow' => mt_rand(150000, 190000),
+            'priceRangeHigh' => mt_rand(210000, 250000)
         ];
     }
 
