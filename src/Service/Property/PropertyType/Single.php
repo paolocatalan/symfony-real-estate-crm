@@ -11,9 +11,9 @@ class Single extends PropertyBase implements PropertyInterface
 {
     public function compute($property): array
     {
-        $geocodeAddress = $this->forwardGeocoding($property);
+        $geocode = $this->forwardGeocoding($property);
 
-        $comparables = $this->comparableListings($geocodeAddress);
+        $comparables = $this->comparableListings($geocode['address'], $geocode['cities']);
 
         $formula = $this->proprietaryFormula($property, $comparables); 
 
@@ -21,44 +21,17 @@ class Single extends PropertyBase implements PropertyInterface
             'price' => $formula['price'],
             'priceRangeLow' => $formula['priceRangeLow'],
             'priceRangeHigh' => $formula['priceRangeHigh'],
-            'latitude' => $geocodeAddress['lat'],
-            'longtitude' => $geocodeAddress['lon'],
+            'latitude' => $geocode['address']['lat'],
+            'longtitude' => $geocode['address']['lon'],
             'comparables' => $comparables
         ];
     }
 
-    protected function comparableListings($geocodeAddress): array
+    protected function comparableListings($geocodeAddress, $geocodeCities): array
     {
-        $handle = curl_init();
-
-        $urlParams = [
-            '_quantity' => '3',
-            'date' => 'date',
-            'latitude' => 'latitude',
-            'longitude' => 'longitude',
-            'streetAddress' => 'streetAddress'
-        ];
-
-        $url = 'https://fakerapi.it/api/v1/custom?_quantity=3'. http_build_query($urlParams);
-
-        curl_setopt($handle, CURLOPT_URL, $url);
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        
-        $response = curl_exec($handle);
-        
-        $retry = 0;
-        while(curl_errno($handle) == 28 && $retry < 3) {
-            sleep(1);
-            $response = curl_exec($handle);
-            $retry++;
-        }
-
-        $content = json_decode($response, true);
-        $propertyListings = $content['data'];
-        
-        $properties = array();
+        $propertyListings = array();
         for ($i=0; $i < 3; $i++) { 
-            $properties[] = array_merge($propertyListings[$i], array(
+            $propertyListings[] = array_merge($geocodeCities[$i], array(
                 'city' => $geocodeAddress['city'],
                 'state' => $geocodeAddress['state'],
                 'zip_code' => $geocodeAddress['postcode'],
@@ -76,7 +49,7 @@ class Single extends PropertyBase implements PropertyInterface
             ));
         }
 
-        return $properties;
+        return $propertyListings;
     }
 
     protected function proprietaryFormula($property, $comparables): array
