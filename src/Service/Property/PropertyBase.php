@@ -13,9 +13,8 @@ abstract class PropertyBase
         $geocodeAddress = [
             'text' => $address,
             'limit' => '1',
-            'apiKey' => '289606711c714dc2b62b6bc8ca6bc213'
+            'apiKey' => $_ENV['GEOAPIFY']
         ];
-
         $geocodeCities = [
             '_quantity' => '3',
             'date' => 'date',
@@ -23,44 +22,49 @@ abstract class PropertyBase
             'longitude' => 'longitude',
             'streetAddress' => 'streetAddress'
         ];
-
-        // URLs to fetch & replace the URLs as per your need
         $urls = [
             'https://api.geoapify.com/v1/geocode/search?' . http_build_query($geocodeAddress),
-            'https://fakerapi.it/api/v1/custom?_quantity=3'. http_build_query($geocodeCities)
+            'https://fakerapi.it/api/v1/custom?'. http_build_query($geocodeCities)
         ];
 
-        // Initialize multi handle
-        $mh = curl_multi_init();
+        $multiHandle = curl_multi_init();
         
-        // Array to store cURL handles
         $handles = [];
         
-        // Create individual cURL handles for each URL
         foreach ($urls as $url) {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_multi_add_handle($mh, $ch);
-            $handles[] = $ch;
+            $curl = curl_init();
+            curl_setopt($curl, CURLOPT_URL, $url);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            curl_multi_add_handle($multiHandle, $curl);
+            $handles[] = $curl;
         }
         
-        // Execute the multi handle
-        $running = null;
-        do {
-            curl_multi_exec($mh, $running);
-        } while ($running > 0);
-        
-        // Get and display responses
-        foreach ($handles as $index => $ch) {
-            $response[$index] = json_decode(curl_multi_getcontent($ch), true);
+        try {
+            $running = null;
+            do {
+                $status = curl_multi_exec($multiHandle, $running);
+                // block the loop until there's activity on any curl_multi connection
+                curl_multi_select($multiHandle, 1);
+            } while ($running > 0);
+
+            if ($status !== CURLM_OK) {
+                $errno = curl_multi_errno($multiHandle);
+                $errorMessage = curl_multi_strerror($status);
+                throw new \Exception($errorMessage, $errno);
+            }
+        } catch (\Exception $e) {
+            //$logger->error($e->getMessage());
+            return [];
+        }
+
+        foreach ($handles as $index => $curl) {
+            $response[$index] = json_decode(curl_multi_getcontent($curl), true);
         }
         
-        // Remove handles and close multi handle
-        foreach ($handles as $ch) {
-            curl_multi_remove_handle($mh, $ch);
+        foreach ($handles as $curl) {
+            curl_multi_remove_handle($multiHandle, $curl);
         }
-        curl_multi_close($mh);
+        curl_multi_close($multiHandle);
 
         return [
             'address' => $response[0]['features'][0]['properties'],
@@ -68,7 +72,7 @@ abstract class PropertyBase
         ];
     }
 
-    abstract protected function comparableListings($geocodeAddress, $geocodeCities): array;
+    abstract protected function comparableListings($geocode): array;
 
-    abstract protected function proprietaryFormula($property, $comparables): array;
+    abstract protected function proprietaryFormula($property, $market, $comparables): array;
 }

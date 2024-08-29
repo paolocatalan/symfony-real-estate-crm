@@ -13,6 +13,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Service\ImageUploader;
 use App\Service\Property\PropertyValuation;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Contracts\Cache\ItemInterface;
 
 class PropertiesController extends AbstractController
 {
@@ -74,7 +76,12 @@ class PropertiesController extends AbstractController
     {
         $property = $this->propertyRepository->find($id);
 
-        $value = (new PropertyValuation($property))->calculate();
+        $cache = new FilesystemAdapter();
+
+        $value = $cache->get('property_'. $id .'_value', function (ItemInterface $item) use ($property): array {
+            $item->expiresAfter(3600);
+            return (new PropertyValuation($property))->calculate();
+        });
 
         return $this->render('show.html.twig', [
             'property' => $property,

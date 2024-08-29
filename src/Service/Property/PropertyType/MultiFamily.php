@@ -9,14 +9,11 @@ use App\Service\Property\PropertyInterface;
 
 class MultiFamily extends PropertyBase implements PropertyInterface
 {
-    public function compute($property): array
-    {
+    public function compute($property): array {
         $geocode = $this->forwardGeocoding($property);
-
-        $comparables = $this->comparableListings($geocode['address'], $geocode['cities']);
-
-        $formula = $this->proprietaryFormula($property, $comparables); 
-
+        $market = $this->marketData($property);
+        $comparables = $this->comparableListings($geocode);
+        $formula = $this->proprietaryFormula($property, $market, $comparables); 
         return [
             'price' => $formula['price'],
             'priceRangeLow' => $formula['priceRangeLow'],
@@ -27,15 +24,18 @@ class MultiFamily extends PropertyBase implements PropertyInterface
         ];
     }
 
-    protected function comparableListings($geocodeAddress, $geocodeCities): array
-    {
+    protected function marketData($property): array {
+        return [];
+    }
+
+    protected function comparableListings($geocode): array {
         $propertyListings = array();
         for ($i=0; $i < 3; $i++) { 
-            $propertyListings[] = array_merge($geocodeCities[$i], array(
-                'city' => $geocodeAddress['city'],
-                'state' => $geocodeAddress['state'],
-                'zip_code' => $geocodeAddress['postcode'],
-                'country' => $geocodeAddress['country'],
+            $propertyListings[] = array_merge($geocode['cities'][$i], array(
+                'city' => $geocode['address']['city'],
+                'state' => $geocode['address']['state'],
+                'zip_code' => $geocode['address']['postcode'],
+                'country' => $geocode['address']['country'],
                 'propertyType' => 'MultiFamily',
                 'bedrooms' => mt_rand(5, 8),
                 'banthrooms' => mt_rand(4, 7),
@@ -48,16 +48,11 @@ class MultiFamily extends PropertyBase implements PropertyInterface
                 'correlation' => 0.9891
             ));
         }
-
         return $propertyListings;
     }
 
-    protected function proprietaryFormula($property, $comparables): array
-    {
-        // Market Trends
-
+    protected function proprietaryFormula($market, $property, $comparables): array {
         // Adjustments Factor
-
         return [
             'price' => mt_rand(290000, 310000),
             'priceRangeLow' => mt_rand(250000, 289999),

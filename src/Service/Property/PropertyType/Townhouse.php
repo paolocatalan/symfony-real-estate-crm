@@ -9,13 +9,14 @@ use App\Service\Property\PropertyInterface;
 
 class Townhouse extends PropertyBase implements PropertyInterface
 {
-    public function compute($property): array
-    {
+    public function compute($property): array {
         $geocode = $this->forwardGeocoding($property);
 
-        $comparables = $this->comparableListings($geocode['address'], $geocode['cities']);
+        $market = $this->marketData($property);
 
-        $formula = $this->proprietaryFormula($property, $comparables); 
+        $comparables = $this->comparableListings($geocode);
+
+        $formula = $this->proprietaryFormula($property, $market, $comparables); 
 
         return [
             'price' => $formula['price'],
@@ -27,15 +28,19 @@ class Townhouse extends PropertyBase implements PropertyInterface
         ];
     }
 
-    protected function comparableListings($geocodeAddress, $geocodeCities): array
+    protected function marketData($property): array
     {
+        return [];
+    }
+
+    protected function comparableListings($geocode): array {
         $propertyListings = array();
         for ($i=0; $i < 3; $i++) { 
-            $propertyListings[] = array_merge($geocodeCities[$i], array(
-                'city' => $geocodeAddress['city'],
-                'state' => $geocodeAddress['state'],
-                'zip_code' => $geocodeAddress['postcode'],
-                'country' => $geocodeAddress['country'],
+            $propertyListings[] = array_merge($geocode['cities'][$i], array(
+                'city' => $geocode['address']['city'],
+                'state' => $geocode['address']['state'],
+                'zip_code' => $geocode['address']['postcode'],
+                'country' => $geocode['address']['country'],
                 'propertyType' => 'Townhouse',
                 'bedrooms' => mt_rand(3, 4),
                 'banthrooms' => mt_rand(2, 3),
@@ -52,10 +57,7 @@ class Townhouse extends PropertyBase implements PropertyInterface
         return $propertyListings;
     }
 
-    protected function proprietaryFormula($property, $comparables): array
-    {
-        // Market Trends
-
+    protected function proprietaryFormula($market, $property, $comparables): array {
         // Adjustments Factor
 
         return [
