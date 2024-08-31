@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Add Property Step 2{% endblock %}
+
+{% block body %}
+    <h1>Add Property Step 2</h1>
+
+    {{ form_start(form) }}
+    {{ form_row(form.bedrooms) }}
+    {{ form_row(form.bathrooms) }}
+    {{ form_row(form.sqft) }}
+    {{ form_row(form.acres) }}
+    {{ form_row(form.build_year) }}
+    {{ form_row(form.type) }}
+    {{ form_row(form.status) }}
+    {{ form_row(form.image_path) }}
+    {{ form_row(form.feature) }}
+    {{ form_row(form.description) }}
+    <a href="{{ path('add_property', {step: 'location'}) }}"> back </a>
+    <button type="submit">Submit Property</button>
+    {{ form_end(form) }}
+{% endblock %}

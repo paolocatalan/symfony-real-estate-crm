@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block title %} Validate Property Address {% endblock %}
+
+{% block body %}
+    <h1>Validate Property Address</h1>
+    <form method="POST" action="{{ path('validate_property') }}">
+        <label for="street">Street</label><br>
+        <input type="text" id="street" name="street"><br>
+        <label for="city">City</label><br>
+        <input type="text" id="city" name="city"><br>
+        <label for="zipcode">Zip Code</label><br>
+        <input type="text" id="zipcode" name="zipcode"><br>
+        <label for="country">Country</label><br>
+        <input type="text" id="country" name="country"><br><br>
+        <input type="submit" value="Submit">
+    </form>
+{% endblock %}

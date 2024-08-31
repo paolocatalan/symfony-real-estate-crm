@@ -4,31 +4,28 @@ namespace App\Controller;
 
 use App\Entity\Property;
 use App\Form\PropertyFormType;
+use App\Service\ImageUploader;
+use App\Service\Property\PropertyValuation;
 use App\Repository\PropertyRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Service\ImageUploader;
-use App\Service\Property\PropertyValuation;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Cache\ItemInterface;
 
 class PropertiesController extends AbstractController
 {
-    private $entityManager;
-    private $propertyRepository;
-
     public function __construct(
-        PropertyRepository $propertyRepository,
-        EntityManagerInterface $entityManager,
-    )
-    {
-        $this->propertyRepository = $propertyRepository;
-        $this->entityManager = $entityManager;
-    }
+        private readonly PropertyRepository $propertyRepository,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly UserRepository $userRepository,
+        private readonly RequestStack $requestStack,
+    ) {}
 
     #[Route('/properties', name: 'properties')]
     public function index(): Response
@@ -75,6 +72,7 @@ class PropertiesController extends AbstractController
     public function show($id): Response
     {
         $property = $this->propertyRepository->find($id);
+        $broker = $this->userRepository->find($property->getBroker());
 
         $cache = new FilesystemAdapter();
 
@@ -85,7 +83,8 @@ class PropertiesController extends AbstractController
 
         return $this->render('show.html.twig', [
             'property' => $property,
-            'value' => $value
+            'value' => $value,
+            'broker' => $broker
         ]);
     }
 

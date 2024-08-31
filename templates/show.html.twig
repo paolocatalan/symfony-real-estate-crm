@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ property.address }}{% endblock %}
+{% block title %}{{ property.id }}{% endblock %}
 
 {% block body %}
     <img src="{{ asset('uploads/images/' ~ property.imagePath) }}" width="256">
@@ -8,10 +8,15 @@
     <p>Address: {{ property.address }}</p>
     <p>City: {{ property.city }}</p>
     <p>Zip Code: {{ property.zipCode }}</p>
+    <p>Country: {{ property.country }}</p>
     <p>Build Year: {{ property.getBuildYear|date('Y') }}</p>
     <p>Bedrooms: {{ property.bedrooms }}</p>
     <p>Bathrooms: {{ property.bathrooms }}</p>
     <p>Interior: {{ property.sqft }}</p>
+    <p>Exterior: {{ property.acre }}</p>
+    <p>Property Type: {{ property.type }}</p>
+    <p>Broker: {{ broker.name }}</p>
+    <p>Feature:<br>{{ property.feature }}</p>
     <p>Description:<br>{{ property.description }}</p>
 
     <pre>

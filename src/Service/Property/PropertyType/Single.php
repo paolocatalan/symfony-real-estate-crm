@@ -10,42 +10,37 @@ use App\Service\Property\PropertyInterface;
 class Single extends PropertyBase implements PropertyInterface
 {
     public function compute($property): array {
-        $geocode = $this->forwardGeocoding($property);
-        $market = $this->marketData($property, $geocode);
-        $comparables = $this->comparableListings($property, $geocode);
-        $formula = $this->proprietaryFormula($property, $market, $comparables); 
+        $data = $this->dataSources($property);
+        $comparables = $this->comparableListings($data['forwardGeocoding'], $data['comparables']);
+        $formula = $this->proprietaryFormula($property, $data['marketData'], $comparables); 
         return [
             'price' => $formula['price'],
             'priceRangeLow' => $formula['priceRangeLow'],
             'priceRangeHigh' => $formula['priceRangeHigh'],
-            'latitude' => $geocode['address']['lat'],
-            'longtitude' => $geocode['address']['lon'],
+            'latitude' => $data['forwardGeocoding']['lat'],
+            'longtitude' => $data['forwardGeocoding']['lon'],
             'comparables' => $comparables
         ];
     }
 
-    protected function marketData($property, $geocode): array {
-        return [];
-    }
-
-    protected function comparableListings($geocode): array {
+    protected function comparableListings($geocodeAddress, $geocodeCities): array {
         $propertyListings = array();
         for ($i=0; $i < 3; $i++) { 
-            $propertyListings[] = array_merge($geocode['cities'][$i], array(
-                'city' => $geocode['address']['city'],
-                'state' => $geocode['address']['state'],
-                'zip_code' => $geocode['address']['postcode'],
-                'country' => $geocode['address']['country'],
+            $propertyListings[] = array_merge($geocodeCities[$i], array(
+                'city' => $geocodeAddress['city'],
+                'state' => $geocodeAddress['state'],
+                'zip_code' => $geocodeAddress['postcode'],
+                'country' => $geocodeAddress['country'],
                 'propertyType' => 'Single',
                 'bedrooms' => mt_rand(1, 3),
                 'banthrooms' => mt_rand(1, 2),
                 'squareFootage' => mt_rand(1000, 1800),
                 'price' => mt_rand(19001, 209999),
-                'listedDate' => '2023-02-18T00:00:00.000Z',
-                'lastSeenDate' => '2023-02-23T00:00:00.000Z',
+                'listedDate' => date('Y-m-d', strtotime('- '.  mt_rand(1, 30) . ' days' )),
+                'lastSeenDate' => date('Y-m-d', strtotime('- '.  mt_rand(1, 30) . ' days' )),
                 'daysOld' => mt_rand(1, 30),
-                'distance' => 0.2009,
-                'correlation' => 0.9891
+                'distance' => (float)number_format(mt_rand() / mt_getrandmax(), 4),
+                'correlation' => (float)number_format(mt_rand() / mt_getrandmax(), 4)
             ));
         }
         return $propertyListings;

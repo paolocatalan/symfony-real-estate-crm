@@ -10,32 +10,27 @@ use App\Service\Property\PropertyInterface;
 class MultiFamily extends PropertyBase implements PropertyInterface
 {
     public function compute($property): array {
-        $geocode = $this->forwardGeocoding($property);
-        $market = $this->marketData($property);
-        $comparables = $this->comparableListings($geocode);
-        $formula = $this->proprietaryFormula($property, $market, $comparables); 
+        $data = $this->dataSources($property);
+        $comparables = $this->comparableListings($data['forwardGeocoding'], $data['comparables']);
+        $formula = $this->proprietaryFormula($property, $data['marketData'], $comparables); 
         return [
             'price' => $formula['price'],
             'priceRangeLow' => $formula['priceRangeLow'],
             'priceRangeHigh' => $formula['priceRangeHigh'],
-            'latitude' => $geocode['address']['lat'],
-            'longtitude' => $geocode['address']['lon'],
-            'comparables' => $comparables
+            'latitude' => $data['forwardGeocoding']['lat'],
+            'longtitude' => $data['forwardGeocoding']['lon'],
+            'comparables' => $data['comparables']
         ];
     }
 
-    protected function marketData($property): array {
-        return [];
-    }
-
-    protected function comparableListings($geocode): array {
+    protected function comparableListings($geocodeAddress, $geocodeCities): array {
         $propertyListings = array();
         for ($i=0; $i < 3; $i++) { 
-            $propertyListings[] = array_merge($geocode['cities'][$i], array(
-                'city' => $geocode['address']['city'],
-                'state' => $geocode['address']['state'],
-                'zip_code' => $geocode['address']['postcode'],
-                'country' => $geocode['address']['country'],
+            $propertyListings[] = array_merge($geocodeCities[$i], array(
+                'city' => $geocodeAddress['city'],
+                'state' => $geocodeAddress['state'],
+                'zip_code' => $geocodeAddress['postcode'],
+                'country' => $geocodeAddress['country'],
                 'propertyType' => 'MultiFamily',
                 'bedrooms' => mt_rand(5, 8),
                 'banthrooms' => mt_rand(4, 7),
@@ -51,7 +46,7 @@ class MultiFamily extends PropertyBase implements PropertyInterface
         return $propertyListings;
     }
 
-    protected function proprietaryFormula($market, $property, $comparables): array {
+    protected function proprietaryFormula($property, $market, $comparables): array {
         // Adjustments Factor
         return [
             'price' => mt_rand(290000, 310000),

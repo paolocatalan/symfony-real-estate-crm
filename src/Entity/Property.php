@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use App\Config\PropertyTypeEnum;
 use App\Repository\PropertyRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -31,37 +30,84 @@ class Property
     private ?string $country = null;
 
     #[ORM\Column]
+    private ?float $latitude = null;
+
+    #[ORM\Column]
+    private ?float $longtitude = null;
+
+    #[ORM\Column(type: Types::TEXT)]
+    private ?string $description = null;
+
+    #[ORM\Column(type: Types::TEXT)]
+    private ?string $features = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $image_path = null;
+
+    #[ORM\Column]
     private ?int $bedrooms = null;
 
     #[ORM\Column]
     private ?int $bathrooms = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $sqft = null;
+    #[ORM\Column]
+    private ?float $sqft = null;
 
-    #[ORM\Column(length: 255)]
-    private ?float $acre = null;
+    #[ORM\Column]
+    private ?float $acres = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTimeInterface $build_year = null;
-
-    #[ORM\Column(type: Types::TEXT)]
-    private ?string $feature = null;
-
-    #[ORM\Column(type: Types::TEXT)]
-    private ?string $description = null;
-
-    #[ORM\Column(length: 255)]
-    private ?string $image_path = null;
+    #[ORM\Column]
+    private ?int $build_year = null;
 
     #[ORM\Column(type: 'string')]
     private ?string $type;
 
     #[ORM\Column(length: 255)]
-    private ?string $status = null;
+    private ?string $status;
 
-    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
-    private ?User $user = null;
+    #[ORM\ManyToOne]
+    private ?User $broker = null;
+
+    public function __construct(
+        null|string $address = null,
+        null|string $city = null,
+        null|string $state = null,
+        null|string $zip_code = null,
+        null|string $country = null,
+        null|float $latitude = null,
+        null|float $longtitude = null,
+        null|string $description = null,
+        null|string $features = null,
+        null|string $image_path = null,
+        null|int $bedrooms = null,
+        null|int $bathrooms = null,
+        null|float $sqft = null,
+        null|float $acres = null,
+        null|int $build_year = null,
+        null|string $type = null,
+        null|string $status = null,
+        null|string $broker = null,
+    )
+    {
+        $this->address = $address;
+        $this->city = $city;
+        $this->state = $state;
+        $this->zip_code = $zip_code;
+        $this->country = $country;
+        $this->latitude = $latitude;
+        $this->longtitude = $longtitude;
+        $this->description = $description;
+        $this->features = $features;
+        $this->image_path = $image_path;
+        $this->bedrooms = $bedrooms;
+        $this->bathrooms = $bathrooms;
+        $this->sqft = $sqft;
+        $this->acres = $acres;
+        $this->build_year = $build_year;
+        $this->type = $type;
+        $this->status = $status;
+        $this->broker = $broker;
+    }
 
     public function getId(): ?int
     {
@@ -128,6 +174,58 @@ class Property
         return $this;
     }
 
+    public function getLatitude(): ?float {
+        return $this->latitude;
+    }
+
+    public function setLatitude(?float $latitude): void {
+        $this->latitude = $latitude;
+    }
+
+    public function getLongtitude(): ?float {
+        return $this->longtitude;
+    }
+
+    public function setLongtitude(?float $longtitude): void {
+        $this->longtitude = $longtitude;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(string $description): static
+    {
+        $this->description = $description;
+
+        return $this;
+    }
+
+    public function getFeatures(): ?string
+    {
+        return $this->features;
+    }
+
+    public function setFeatures(string $features): static
+    {
+        $this->features = $features;
+
+        return $this;
+    }
+
+    public function getImagePath(): ?string
+    {
+        return $this->image_path;
+    }
+
+    public function setImagePath(string $image_path): static
+    {
+        $this->image_path = $image_path;
+
+        return $this;
+    }
+
     public function getBedrooms(): ?int
     {
         return $this->bedrooms;
@@ -152,62 +250,38 @@ class Property
         return $this;
     }
 
-    public function getSqft(): ?string
+    public function getSqft(): ?float
     {
         return $this->sqft;
     }
 
-    public function setSqft(string $sqft): static
+    public function setSqft(float $sqft): static
     {
         $this->sqft = $sqft;
 
         return $this;
     }
 
-    public function getAcre(): ?float
+    public function getAcres(): ?float
     {
-        return $this->acre;
+        return $this->acres;
     }
 
-    public function setAcre(string $acre): static
+    public function setAcres(string $acres): static
     {
-        $this->acre = $acre;
+        $this->acres = $acres;
 
         return $this;
     }
 
-    public function getBuildYear(): ?\DateTimeInterface
+    public function getBuildYear(): ?int
     {
         return $this->build_year;
     }
 
-    public function setBuildYear(\DateTimeInterface $build_year): static
+    public function setBuildYear(int $build_year): static
     {
         $this->build_year = $build_year;
-
-        return $this;
-    }
-
-    public function getFeature(): ?string
-    {
-        return $this->feature;
-    }
-
-    public function setFeature(string $feature): static
-    {
-        $this->feature = $feature;
-
-        return $this;
-    }
-    
-    public function getDescription(): ?string
-    {
-        return $this->description;
-    }
-
-    public function setDescription(string $description): static
-    {
-        $this->description = $description;
 
         return $this;
     }
@@ -223,19 +297,7 @@ class Property
 
         return $this;
     }
-    
-    public function getImagePath(): ?string
-    {
-        return $this->image_path;
-    }
 
-    public function setImagePath(string $image_path): static
-    {
-        $this->image_path = $image_path;
-
-        return $this;
-    }
-    
     public function getStatus(): ?string
     {
         return $this->status;
@@ -247,16 +309,17 @@ class Property
 
         return $this;
     }
-    
+
     public function getBroker(): ?User
     {
-        return $this->user;
+        return $this->broker;
     }
 
-    public function setBroker(?User $user): static
+    public function setBroker(?User $broker): static
     {
-        $this->user = $user;
+        $this->broker = $broker;
 
         return $this;
     }
+
 }

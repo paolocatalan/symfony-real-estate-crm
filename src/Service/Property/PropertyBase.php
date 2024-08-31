@@ -6,31 +6,26 @@ namespace App\Service\Property;
 
 abstract class PropertyBase
 {
-    protected function forwardGeocoding($property): array
-    {
+    protected function dataSources($property): array {
         $address = $property->getAddress() . ', ' . $property->getCity() . ', ' . $property->getZipCode() . ', ' . $property->getCountry();
 
-        $geocodeAddress = [
-            'text' => $address,
-            'limit' => '1',
-            'apiKey' => $_ENV['GEOAPIFY']
-        ];
-        $geocodeCities = [
-            '_quantity' => '3',
-            'date' => 'date',
-            'latitude' => 'latitude',
-            'longitude' => 'longitude',
-            'streetAddress' => 'streetAddress'
-        ];
         $urls = [
-            'https://api.geoapify.com/v1/geocode/search?' . http_build_query($geocodeAddress),
-            'https://fakerapi.it/api/v1/custom?'. http_build_query($geocodeCities)
+            'https://api.geoapify.com/v1/geocode/search?' . http_build_query([
+                'text' => $address,
+                'limit' => '1',
+                'apiKey' => $_ENV['GEOAPIFY']
+            ]),
+            'https://fakerapi.it/api/v1/custom?'. http_build_query([
+                '_quantity' => '3',
+                'date' => 'date',
+                'latitude' => 'latitude',
+                'longitude' => 'longitude',
+                'streetAddress' => 'streetAddress'
+            ])
         ];
 
         $multiHandle = curl_multi_init();
-        
         $handles = [];
-        
         foreach ($urls as $url) {
             $curl = curl_init();
             curl_setopt($curl, CURLOPT_URL, $url);
@@ -63,16 +58,18 @@ abstract class PropertyBase
         
         foreach ($handles as $curl) {
             curl_multi_remove_handle($multiHandle, $curl);
+            curl_close($curl);
         }
         curl_multi_close($multiHandle);
 
         return [
-            'address' => $response[0]['features'][0]['properties'],
-            'cities' => $response[1]['data']
+            'forwardGeocoding' => $response[0]['features'][0]['properties'],
+            'comparables' => $response[1]['data'],
+            'marketData' => []
         ];
     }
 
-    abstract protected function comparableListings($geocode): array;
+    abstract protected function comparableListings($property, $geocode): array;
 
     abstract protected function proprietaryFormula($property, $market, $comparables): array;
 }
