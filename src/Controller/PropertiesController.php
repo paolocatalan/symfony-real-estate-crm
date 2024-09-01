@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Entity\Property;
@@ -15,7 +17,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Cache\ItemInterface;
 
 class PropertiesController extends AbstractController
@@ -24,55 +25,20 @@ class PropertiesController extends AbstractController
         private readonly PropertyRepository $propertyRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly UserRepository $userRepository,
-        private readonly RequestStack $requestStack,
     ) {}
 
     #[Route('/properties', name: 'properties')]
-    public function index(): Response
-    {
+    public function index(): Response {
         $repository = $this->entityManager->getRepository(Property::class);
         $properties = $repository->findAll();
-
-        return $this->render('index.html.twig', [
+        return $this->render('/property/index.html.twig', [
             'properties' => $properties
         ]);
     }
 
-    #[Route('/properties/create', name: 'create_properties')]
-    public function create(Request $request, ImageUploader $imageUploader): Response
-    {
-        $property = new Property();
-        $form = $this->createForm(PropertyFormType::class, $property);
-
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            $newProperty = $form->getData();
-
-            /** @var UploadedFile */
-            $imagePath = $form->get('image_path')->getData();
-            if ($imagePath) {
-                $newFileName = $imageUploader->upload($imagePath);
-                $newProperty->setImagePath($newFileName);
-            }
-
-            $this->entityManager->persist($newProperty);
-            $this->entityManager->flush();
-
-            $this->addFlash('message', 'Property instered successfully.');
-
-            return $this->redirectToRoute('properties');
-        }
-
-        return $this->render('edit.html.twig', [
-            'form' => $form->createView()
-        ]);
-    }
-
     #[Route('/properties/{id}', methods: ['GET'], name: 'show_property')]
-    public function show($id): Response
-    {
+    public function show($id): Response {
         $property = $this->propertyRepository->find($id);
-        $broker = $this->userRepository->find($property->getBroker());
 
         $cache = new FilesystemAdapter();
 
@@ -81,16 +47,14 @@ class PropertiesController extends AbstractController
             return (new PropertyValuation($property))->calculate();
         });
 
-        return $this->render('show.html.twig', [
+        return $this->render('/property/show.html.twig', [
             'property' => $property,
-            'value' => $value,
-            'broker' => $broker
+            'value' => $value
         ]);
     }
 
     #[Route('/properties/{id}/edit', name: 'edit_property')]
-    public function edit($id, Request $request, ImageUploader $imageUploader): Response
-    {
+    public function edit($id, Request $request, ImageUploader $imageUploader): Response {
         $property = $this->propertyRepository->find($id);
         $form = $this->createForm(PropertyFormType::class, $property);
 
@@ -113,15 +77,14 @@ class PropertiesController extends AbstractController
             return $this->redirectToRoute('properties');
         }
 
-        return $this->render('edit.html.twig', [
+        return $this->render('/property/edit.html.twig', [
             'property' => $property,
             'form' => $form->createView()
         ]);
     }
 
     #[Route('/properties/{id}/delete', methods: ['GET', 'DELETE'], name: 'delete_property')]
-    public function delete($id): Response
-    {
+    public function delete($id): Response {
         $property = $this->propertyRepository->find($id);
 
         $this->entityManager->remove($property);

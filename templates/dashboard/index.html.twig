@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block body %}
+    <h1>Dashboard</h1>
+    <ul>
+    {% for item in app.user.AvailableProperty %}
+        <li>{{ item.city }}, {{ item.country }}</li>
+    {% endfor %}
+    </ul>
+{% endblock %}

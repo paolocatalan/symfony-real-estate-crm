@@ -6,10 +6,12 @@ namespace App\Controller;
 
 use App\DataTransferObject\PropertyCharacteristics;
 use App\DataTransferObject\PropertyLocation;
+use App\Entity\User;
 use App\Factory\PropertyFactory;
 use App\Form\PropertyCharacteristicsFormType;
 use App\Form\PropertyLocationFormType;
 use App\Repository\PropertyRepository;
+use App\Service\GeoCoding;
 use App\Service\ImageUploader;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
@@ -17,6 +19,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 class AddPropertyController extends AbstractController
 {
@@ -30,7 +33,7 @@ class AddPropertyController extends AbstractController
     ) {}
 
     #[Route('/properties/add/{step}', name: 'add_property')]
-    public function add(string $step, Request $request, ImageUploader $imageUploader): Response {
+    public function add(string $step, Request $request, #[CurrentUser] User $currentUser, ImageUploader $imageUploader, GeoCoding $geoCoding): Response {
         $form = match ($step) {
              self::CREATE_PROPERTY_STEP_ONE => $this->renderCreatePropertyStepOne(),
              self::CREATE_PROPERTY_STEP_TWO => $this->renderCreatePropertyStepTwo(),
@@ -40,8 +43,8 @@ class AddPropertyController extends AbstractController
         $form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid()) {
             return match(true) {
-                $step === self::CREATE_PROPERTY_STEP_ONE => $this->handlePropertyFormStepOne($form),
-                $step === self::CREATE_PROPERTY_STEP_TWO => $this->handlePropertyFormStepTwo($form, $imageUploader),
+                $step === self::CREATE_PROPERTY_STEP_ONE => $this->handlePropertyFormStepOne($form, $geoCoding),
+                $step === self::CREATE_PROPERTY_STEP_TWO => $this->handlePropertyFormStepTwo($currentUser, $form, $imageUploader),
                 default => $this->redirectToRoute('add_property', ['step' => self::CREATE_PROPERTY_STEP_ONE])
             };
         }
@@ -72,39 +75,57 @@ class AddPropertyController extends AbstractController
         return $this->createForm(PropertyCharacteristicsFormType::class, $propertyCharacteristicsDTO);
     }
 
-    private function handlePropertyFormStepOne(FormInterface $form): Response {
-        $newProperty = $form->getData();
+    private function handlePropertyFormStepOne(FormInterface $form, GeoCoding $geoCoding): Response {
+        $geoCodeResponse = $geoCoding->lookup(
+            $form->get('address')->getData(),
+            $form->get('city')->getData(),
+            $form->get('state')->getData(),
+            $form->get('zip_code')->getData(),
+            $form->get('country')->getData()
+        );
 
+        if ($geoCodeResponse['features'][0]['properties']['rank']['confidence'] >= 0.95) {
+            $propertyData = $form->getData();
+            $propertyData->setLatitude($geoCodeResponse['features'][0]['properties']['lat']);
+            $propertyData->setLongtitude($geoCodeResponse['features'][0]['properties']['lon']);
 
-        $newProperty->setLatitude(0.099766);
-        $newProperty->setLongtitude(-2.099766);
-
-        $this->requestStack->getSession()->set('property-form-step-one', $newProperty);
-
-        return $this->redirectToRoute('add_property', ['step' => self::CREATE_PROPERTY_STEP_TWO]);
+            $this->requestStack->getSession()->set('property-form-step-one', $propertyData);
+            return $this->redirectToRoute('add_property', ['step' => self::CREATE_PROPERTY_STEP_TWO]);
+        } else if ($geoCodeResponse['features'][0]['properties']['rank']['confidence'] < 0.2) {
+            $this->addFlash('message', 'Address can not confirm.');
+        } else {
+            if (isset($geoCodeResponse['features'][0]['properties']['rank']['confidence_street_level']) && $geoCodeResponse['features'][0]['properties']['rank']['confidence_street_level'] >= 0.95 ) {
+                $this->addFlash('message', 'House number not found.');
+            } else if (isset($geoCodeResponse['features'][0]['properties']['rank']['confidence_city_level']) && $geoCodeResponse['features'][0]['properties']['rank']['confidence_city_level'] >= 0.95) {
+                $this->addFlash('message', 'Street level in doubts.');
+            } else {
+                $this->addFlash('message', 'City level in doubts.');
+            }
+        }
+        return $this->redirectToRoute('add_property', ['step' => self::CREATE_PROPERTY_STEP_ONE]);
     }
 
-    private function handlePropertyFormStepTwo(FormInterface $form, ImageUploader $imageUploader): Response {
+    private function handlePropertyFormStepTwo(User $user, FormInterface $form, ImageUploader $imageUploader): Response {
         /**
          * @var PropertyLocation $propertyLocationDTO
          */
         $propertyLocationDTO = $this->requestStack->getSession()->get('property-form-step-one');
 
-        $newProperty = $form->getData();
+        $propertyData = $form->getData();
         /** @var UploadedFile */
         $imagePath = $form->get('image_path')->getData();
         if ($imagePath) {
             $newFileName = $imageUploader->upload($imagePath);
-            $newProperty->setImagePath($newFileName);
+            $propertyData->setImagePath($newFileName);
         }
 
-        $property = $this->propertyFactory->createFormDtos($propertyLocationDTO, $newProperty);
+        $property = $this->propertyFactory->createFormDtos($user, $propertyLocationDTO, $propertyData);
 
         $this->propertyRepository->save($property, true);
 
         $this->requestStack->getSession()->set('property-form-step-one', null);
         $this->requestStack->getSession()->set('property-form-step-two', null);
-        
-        return $this->redirectToRoute('properties', ['id' => $property->getId()]);
+
+        return $this->redirectToRoute('properties');
     }
 }

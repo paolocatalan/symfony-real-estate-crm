@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -26,6 +28,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column]
     private ?int $phone = null;
+
+    #[ORM\OneToMany(targetEntity: Property::class, mappedBy: 'agent')]
+    private Collection $property;
 
     /**
      * @var list<string> The user roles
@@ -137,4 +142,39 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
     }
+
+        /**
+     * @return Collection<int, Property>
+     */
+    public function getProperty(): Collection
+    {
+        return $this->property;
+    }
+
+    public function addProperty(Property $property): static
+    {
+        if (! $this->property->contains($property)) {
+            $this->property->add($property);
+            $property->setAgent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvent(Property $property): static
+    {
+        if ($this->property->removeElement($property)) {
+            // set the owning side to null (unless already changed)
+            if ($property->getAgent() === $this) {
+                $property->setAgent(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getAvailableProperty(): ArrayCollection {
+        return $this->property->filter(fn(Property $property): bool => 'Available' == $property->getStatus());
+    }
+
 }

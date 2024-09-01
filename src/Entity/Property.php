@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\PropertyRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -68,6 +70,9 @@ class Property
     #[ORM\ManyToOne]
     private ?User $broker = null;
 
+    #[ORM\ManyToOne(inversedBy: 'property')]
+    private ?User $agent = null;
+
     public function __construct(
         null|string $address = null,
         null|string $city = null,
@@ -87,6 +92,7 @@ class Property
         null|string $type = null,
         null|string $status = null,
         null|string $broker = null,
+        null|User $agent = null,
     )
     {
         $this->address = $address;
@@ -107,6 +113,7 @@ class Property
         $this->type = $type;
         $this->status = $status;
         $this->broker = $broker;
+        $this->agent = $agent;
     }
 
     public function getId(): ?int
@@ -318,6 +325,18 @@ class Property
     public function setBroker(?User $broker): static
     {
         $this->broker = $broker;
+
+        return $this;
+    }
+
+    public function getAgent(): ?User
+    {
+        return $this->agent;
+    }
+
+    public function setAgent(?User $agent): static
+    {
+        $this->agent = $agent;
 
         return $this;
     }

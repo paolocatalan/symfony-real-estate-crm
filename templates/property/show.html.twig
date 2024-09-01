@@ -7,18 +7,17 @@
     <p>Property ID: {{ property.id }}</p>
     <p>Address: {{ property.address }}</p>
     <p>City: {{ property.city }}</p>
-    <p>Zip Code: {{ property.zipCode }}</p>
+    <p>Zip Code: {{ property.zipcode }}</p>
     <p>Country: {{ property.country }}</p>
-    <p>Build Year: {{ property.getBuildYear|date('Y') }}</p>
+    <p>Description:<br>{{ property.description }}</p>
+    <p>Feature:<br>{{ property.features }}</p>
+    <p>Build Year: {{ property.buildyear }}</p>
     <p>Bedrooms: {{ property.bedrooms }}</p>
     <p>Bathrooms: {{ property.bathrooms }}</p>
     <p>Interior: {{ property.sqft }}</p>
-    <p>Exterior: {{ property.acre }}</p>
+    <p>Exterior: {{ property.acres }}</p>
     <p>Property Type: {{ property.type }}</p>
-    <p>Broker: {{ broker.name }}</p>
-    <p>Feature:<br>{{ property.feature }}</p>
-    <p>Description:<br>{{ property.description }}</p>
-
+    <p>Agent: {{ property.agent.name }}</p>
     <pre>
         {{ dump(value) }}
     </pre>

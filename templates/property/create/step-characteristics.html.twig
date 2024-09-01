@@ -1,10 +1,9 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Add Property Step 2{% endblock %}
+{% block title %}Add the property characteristics{% endblock %}
 
 {% block body %}
-    <h1>Add Property Step 2</h1>
-
+    <h1>Add the property characteristics</h1>
     {{ form_start(form) }}
     {{ form_row(form.bedrooms) }}
     {{ form_row(form.bathrooms) }}
@@ -17,6 +16,6 @@
     {{ form_row(form.feature) }}
     {{ form_row(form.description) }}
     <a href="{{ path('add_property', {step: 'location'}) }}"> back </a>
-    <button type="submit">Submit Property</button>
+    <button type="submit">Add Property</button>
     {{ form_end(form) }}
 {% endblock %}

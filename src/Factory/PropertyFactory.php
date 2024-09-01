@@ -7,9 +7,14 @@ namespace App\Factory;
 use App\DataTransferObject\PropertyCharacteristics;
 use App\DataTransferObject\PropertyLocation;
 use App\Entity\Property;
+use App\Entity\User;
 
 final class PropertyFactory {
-    public function createFormDtos(PropertyLocation $propertyLocationDTO, PropertyCharacteristics $propertyCharacteristicsDTO) {
+    public function createFormDtos(
+        User $agent,
+        PropertyLocation $propertyLocationDTO,
+        PropertyCharacteristics $propertyCharacteristicsDTO
+    ) {
         $property = new Property(
             address: $propertyLocationDTO->getAddress(),
             city: $propertyLocationDTO->getCity(),
@@ -28,7 +33,7 @@ final class PropertyFactory {
             image_path: $propertyCharacteristicsDTO->getImagePath(),
             features: $propertyCharacteristicsDTO->getFeature(),
             description: $propertyCharacteristicsDTO->getDescription(),
-            // broker: $propertyCharacteristicsDTO->getBroker()
+            agent: $agent
         );
 
         return $property;

@@ -1,21 +1,9 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}
-    {% if property is defined %}
-        Edit Property: {{ property.id }}
-    {% else %}
-        Create Property
-    {% endif %}
-{% endblock %}
+{% block title %}Edit Property: {{ property.id }}{% endblock %}
 
 {% block body %}
-    <h1>
-        {% if property is defined %}
-            Edit Property: {{ property.id }}
-        {% else %}
-            Create Property
-        {% endif %}
-    </h1>
+    <h1>Edit Property: {{ property.id }}</h1>
 
     {{ form_start(form) }}
     {{ form_widget(form) }}
