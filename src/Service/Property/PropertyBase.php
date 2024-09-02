@@ -6,14 +6,11 @@ namespace App\Service\Property;
 
 abstract class PropertyBase
 {
+    # Use DTO here and move the concurrent request to a class
     protected function dataSources($property): array {
-        $address = $property->getAddress() . ', ' . $property->getCity() . ', ' . $property->getZipCode() . ', ' . $property->getCountry();
-
         $urls = [
-            'https://api.geoapify.com/v1/geocode/search?' . http_build_query([
-                'text' => $address,
-                'limit' => '1',
-                'apiKey' => $_ENV['GEOAPIFY']
+            'https://random-data-api.com/api/v3/projects/09a3ed70-898e-43cd-87dc-93a31ce880ed?' . http_build_query([
+                'api_key' => $_ENV['RANDOM_DATA_API']
             ]),
             'https://fakerapi.it/api/v1/custom?'. http_build_query([
                 '_quantity' => '3',
@@ -26,7 +23,7 @@ abstract class PropertyBase
 
         $multiHandle = curl_multi_init();
         $handles = [];
-        foreach ($urls as $url) {
+        foreach ($urls as $index => $url) {
             $curl = curl_init();
             curl_setopt($curl, CURLOPT_URL, $url);
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
@@ -63,9 +60,8 @@ abstract class PropertyBase
         curl_multi_close($multiHandle);
 
         return [
-            'forwardGeocoding' => $response[0]['features'][0]['properties'],
-            'comparables' => $response[1]['data'],
-            'marketData' => []
+            'marketData' => $response[0],
+            'comparables' => $response[1]['data']
         ];
     }
 

@@ -11,26 +11,26 @@ class Bungalow extends PropertyBase implements PropertyInterface
 {
     public function compute($property): array {
         $data = $this->dataSources($property);
-        $comparables = $this->comparableListings($data['forwardGeocoding'], $data['comparables']);
+        $comparables = $this->comparableListings($property, $data['comparables']);
         $formula = $this->proprietaryFormula($property, $data['marketData'], $comparables); 
         return [
             'price' => $formula['price'],
             'priceRangeLow' => $formula['priceRangeLow'],
             'priceRangeHigh' => $formula['priceRangeHigh'],
-            'latitude' => $data['forwardGeocoding']['lat'],
-            'longtitude' => $data['forwardGeocoding']['lon'],
-            'comparables' => $data['comparables']
+            'latitude' => $property->getLatitude(),
+            'longtitude' => $property->getLongtitude(),
+            'comparables' => $comparables
         ];
     }
 
-    protected function comparableListings($geocodeAddress, $geocodeCities): array {
+    protected function comparableListings($property, $geocodeCities): array {
         $propertyListings = array();
         for ($i=0; $i < 3; $i++) { 
             $propertyListings[] = array_merge($geocodeCities[$i], array(
-                'city' => $geocodeAddress['city'],
-                'state' => $geocodeAddress['state'],
-                'zip_code' => $geocodeAddress['postcode'],
-                'country' => $geocodeAddress['country'],
+                'city' => $property->getCity(),
+                'state' => $property->getState(),
+                'zip_code' => $property->getZipCode(),
+                'country' => $property->getCountry(),
                 'propertyType' => 'Bungalow',
                 'bedrooms' => mt_rand(1, 3),
                 'banthrooms' => mt_rand(1, 2),

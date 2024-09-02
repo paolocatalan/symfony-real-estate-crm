@@ -18,7 +18,6 @@ class PropertyCharacteristics
     private null|int $build_year = null;
     private null|string $type = null;
     private null|string $status = null;
-    private null|string $broker = null;
 
     public function getDescription(): ?string
     {
