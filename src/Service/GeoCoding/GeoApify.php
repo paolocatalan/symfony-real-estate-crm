@@ -13,7 +13,7 @@ class GeoApify implements GeoCodingInterface
         $handle = curl_init();
 
         $url = 'https://api.geoapify.com/v1/geocode/search?' . http_build_query([
-            'text' => $address . ', ' . $city . ', ' . $state . ', ' . $zipCode . ', ' . $country,
+            'text' => $address . ', ' . $city . ', ' . $state . ' ' . $zipCode . ', ' . $country,
             'limit' => '1',
             'apiKey' => $_ENV['GEOAPIFY']
         ]);
@@ -37,6 +37,7 @@ class GeoApify implements GeoCodingInterface
         $body = json_decode($response, true);
 
         return new GeoCodingResponse(
+            null,
             $body['features'][0]['properties']['lat'],
             $body['features'][0]['properties']['lon'],
             $body['features'][0]['properties']['rank']['confidence'],

@@ -13,7 +13,7 @@ class GooglePlace implements GeoCodingInterface
         $handle = curl_init();
 
         $url = 'https://maps.googleapis.com/maps/api/geocode/json?' . http_build_query([
-            'address' => $address . ', ' . $city . ', ' . $state . ', ' . $zipCode . ', ' . $country,
+            'address' => $address . ', ' . $city . ', ' . $state . ' ' . $zipCode . ', ' . $country,
             'key' => $_ENV['GOOGLE_PLACES_API']
         ]);
 
@@ -35,10 +35,13 @@ class GooglePlace implements GeoCodingInterface
 
         $body =  json_decode($response, true);
 
-        if ($body['status'] !== "OK") {
-            return null;
-        }
-
-        return new GeoCodingResponse( $body['results']['geometry']['location']['lat'], $body['results']['geometry']['location']['lng'], null, null, null);
+        return new GeoCodingResponse(
+            $body['status'],
+            $body['results'][0]['geometry']['location']['lat'] ?? null,
+            $body['results'][0]['geometry']['location']['lng'] ?? null,
+            null,
+            null,
+            null
+        );
     }
 }

@@ -5,18 +5,15 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Property;
-use App\Form\PropertyFormType;
-use App\Service\ImageUploader;
+use App\Message\ContactAgentNotification;
 use App\Service\Property\PropertyValuation;
 use App\Repository\PropertyRepository;
-use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
 class PropertiesController extends AbstractController
@@ -24,7 +21,6 @@ class PropertiesController extends AbstractController
     public function __construct(
         private readonly PropertyRepository $propertyRepository,
         private readonly EntityManagerInterface $entityManager,
-        private readonly UserRepository $userRepository,
     ) {}
 
     #[Route('/properties', name: 'properties')]
@@ -53,46 +49,22 @@ class PropertiesController extends AbstractController
         ]);
     }
 
-    #[Route('/properties/{id}/edit', name: 'edit_property')]
-    public function edit($id, Request $request, ImageUploader $imageUploader): Response {
-        $property = $this->propertyRepository->find($id);
-        $form = $this->createForm(PropertyFormType::class, $property);
-
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            $newProperty = $form->getData();
-
-            /** @var UploadedFile */
-            $imagePath = $form->get('image_path')->getData();
-            if ($imagePath) {
-                $newFileName = $imageUploader->upload($imagePath);
-                $newProperty->setImagePath($newFileName);
+    #[Route('/contact', name: 'contact_properties_agent')]
+    public function contact(MessageBusInterface $bus): Response
+    {
+        $message = new class {
+            public function getUser(): object {
+                return new class {
+                    public function getEmail(): string {
+                        return 'buyer@example.com';
+                    }
+                };
             }
+        };
 
-            $this->entityManager->persist($newProperty);
-            $this->entityManager->flush();
+        $bus->dispatch(new ContactAgentNotification($message));
 
-            $this->addFlash('message', 'Property updated successfully.');
-
-            return $this->redirectToRoute('properties');
-        }
-
-        return $this->render('/property/edit.html.twig', [
-            'property' => $property,
-            'form' => $form->createView()
-        ]);
-    }
-
-    #[Route('/properties/{id}/delete', methods: ['GET', 'DELETE'], name: 'delete_property')]
-    public function delete($id): Response {
-        $property = $this->propertyRepository->find($id);
-
-        $this->entityManager->remove($property);
-        $this->entityManager->flush();
-
-        $this->addFlash('message', 'Property deleted successfully.');
-
-        return $this->redirectToRoute('properties');
+        return $this->render('contact/index.html.twig');
     }
 
 }

@@ -3,6 +3,9 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block body %}
+
+<p>{{ app.session.get('timezone') }} | {{ app.session.get('currency') }} | {{ app.session.get('_locale') }}</p>
+
     <h1>Dashboard</h1>
     <ul>
     {% for item in app.user.AvailableProperty %}
