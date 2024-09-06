@@ -2,20 +2,22 @@
 
 declare(strict_types=1);
 
-namespace App\MessageHandler;
+namespace App\MessageHandler\Event;
 
-use App\Message\ContactAgentNotification;
+use App\Message\Event\InquirySavedEvent;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Mime\Email;
 
-#[AsMessageHandler]
-class ContactAgentNotificationHandler
+#[AsMessageHandler()]
+class InquirySavedEventHandler
 {
     public function __construct(private MailerInterface $mailer) {}
 
-    public function __invoke(ContactAgentNotification $notification)
+    public function __invoke(InquirySavedEvent $event)
     {
+        // throw new \RuntimeException('ORDER COULD NOT BE FOUND.');
+        // https://github.com/mpdf/mpdf
         echo 'Creating a PDF contract note' . PHP_EOL;
 
         // echo 'Emailing contract note to '. $notification->getMessage()->getUser()->getEmail() . PHP_EOL;

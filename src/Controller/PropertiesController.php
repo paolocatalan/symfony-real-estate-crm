@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Property;
+use App\Message\Command\SaveInquiry;
 use App\Message\ContactAgentNotification;
 use App\Service\Property\PropertyValuation;
 use App\Repository\PropertyRepository;
@@ -52,17 +53,21 @@ class PropertiesController extends AbstractController
     #[Route('/contact', name: 'contact_properties_agent')]
     public function contact(MessageBusInterface $bus): Response
     {
-        $message = new class {
-            public function getUser(): object {
-                return new class {
-                    public function getEmail(): string {
-                        return 'buyer@example.com';
-                    }
-                };
-            }
-        };
+        // $message = new class {
+        //     public function  getId(): int {
+        //         return 1;
+        //     }
 
-        $bus->dispatch(new ContactAgentNotification($message));
+        //     public function getUser(): object {
+        //         return new class {
+        //             public function getEmail(): string {
+        //                 return 'paolo_catalan@yahoo.com';
+        //             }
+        //         };
+        //     }
+        // };
+
+        $bus->dispatch(new SaveInquiry());
 
         return $this->render('contact/index.html.twig');
     }

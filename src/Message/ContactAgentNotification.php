@@ -6,9 +6,9 @@ namespace App\Message;
 
 class ContactAgentNotification
 {
-    public function __construct(private object $message) {}
+    public function __construct(private int $messageId) {}
 
-    public function getMessage(): object {
-        return $this->message;
+    public function getMessageId(): int {
+        return $this->messageId;
     }
 }
