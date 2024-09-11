@@ -90,7 +90,7 @@ class ManagePropertiesController extends AbstractController
             );
         } catch (\Throwable $e) {
             // $logger->error($e->getMessage());
-            $this->addFlash('message', $e->getMessage() . ' Please try again later.');
+            $this->addFlash('message', $e->getMessage() . '. Please try again later.');
             return $this->redirectToRoute('properties');
         }
 
@@ -105,16 +105,16 @@ class ManagePropertiesController extends AbstractController
             return $this->redirectToRoute('add_property', ['step' => self::CREATE_PROPERTY_STEP_ONE]);
         }
 
-        // Google returns OK in special characters address
-        if ($geoCodeResponse->status !== "OK") {
-            match ($geoCodeResponse->status) {
-                'ZERO_RESULTS' => $this->addFlash('message', 'No results found.'),
-                'INVALID_REQUEST' => $this->addFlash('message', 'Invalid address.'),
-                'UNKNOWN_ERROR' => $this->addFlash('message', 'Something unexpected happened, please try again.'),
-                default => $this->addFlash('message', 'Something went wrong, please try again later.'),
-            };
-            return $this->redirectToRoute('add_property', ['step' => self::CREATE_PROPERTY_STEP_ONE]);
-        }
+        // Google returns OK in special characters address, returning null
+        // if ($geoCodeResponse->status !== "OK") {
+        //     match ($geoCodeResponse->status) {
+        //         'ZERO_RESULTS' => $this->addFlash('message', 'No results found.'),
+        //         'INVALID_REQUEST' => $this->addFlash('message', 'Invalid address.'),
+        //         'UNKNOWN_ERROR' => $this->addFlash('message', 'Something unexpected happened, please try again.'),
+        //         default => $this->addFlash('message', 'Something went wrong, please try again later.'),
+        //     };
+        //     return $this->redirectToRoute('add_property', ['step' => self::CREATE_PROPERTY_STEP_ONE]);
+        // }
 
         $propertyData = $form->getData();
         $propertyData->setLatitude($geoCodeResponse->latitude);

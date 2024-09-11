@@ -50,24 +50,24 @@ class PropertiesController extends AbstractController
         ]);
     }
 
-    #[Route('/contact', name: 'contact_properties_agent')]
-    public function contact(MessageBusInterface $bus): Response
-    {
-        // $message = new class {
-        //     public function  getId(): int {
-        //         return 1;
-        //     }
+    #[Route('/contact', name: 'contact_agent')]
+    public function contact(MessageBusInterface $bus): Response {
+        // Serialization of 'class@anonymous' is not allowed
+        $notification = new class {
+            public function getId(): int {
+                return 37;
+            }
 
-        //     public function getUser(): object {
-        //         return new class {
-        //             public function getEmail(): string {
-        //                 return 'paolo_catalan@yahoo.com';
-        //             }
-        //         };
-        //     }
-        // };
+            public function getAgent(): object {
+                return new class {
+                    public function getEmail(): string {
+                        return 'paolo_catalan@yahoo.com';
+                    }
+                };
+            }
+        };
 
-        $bus->dispatch(new SaveInquiry());
+        $bus->dispatch(new ContactAgentNotification($notification->getId()));
 
         return $this->render('contact/index.html.twig');
     }
