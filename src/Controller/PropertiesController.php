@@ -6,7 +6,6 @@ namespace App\Controller;
 
 use App\Entity\Property;
 use App\Form\ContactAgentFormType;
-use App\Message\Command\SaveInquiry;
 use App\Message\ContactAgentNotification;
 use App\Service\Property\PropertyValuation;
 use App\Repository\PropertyRepository;
@@ -16,6 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
@@ -40,20 +40,27 @@ class PropertiesController extends AbstractController
         $property = $this->propertyRepository->find($id);
 
         $form = $this->createForm(ContactAgentFormType::class);
-
         $form->handleRequest($request);
-
         if ($form->isSubmitted() && $form->isValid()) {
             $formData = $form->getData();
-
-            $bus->dispatch(new ContactAgentNotification($formData->getName()));
 
             $this->entityManager->persist($formData);
             $this->entityManager->flush();
 
+            $bus->dispatch(new ContactAgentNotification($formData->getName()));
+
             return $this->redirectToRoute('contact_agent');
         }
 
+        return $this->render('/property/show.html.twig', [
+            'property' => $property,
+            'form' => $form
+        ]);
+    }
+
+    #[Route('/market-insights/{id}', name: 'market_insights')]
+    public function fetch($id): JsonResponse {
+        $property = $this->propertyRepository->find($id);
         $cache = new FilesystemAdapter();
 
         $value = $cache->get('property_'. $id .'_value', function (ItemInterface $item) use ($property): array {
@@ -61,11 +68,7 @@ class PropertiesController extends AbstractController
             return (new PropertyValuation($property))->calculate();
         });
 
-        return $this->render('/property/show.html.twig', [
-            'property' => $property,
-            'value' => $value,
-            'form' => $form
-        ]);
+        return $this->json($value);
     }
 
     #[Route('/contact', name: 'contact_agent')]
