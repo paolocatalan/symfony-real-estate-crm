@@ -18,7 +18,15 @@
     <p>Exterior: {{ property.acres }}</p>
     <p>Property Type: {{ property.type }}</p>
     <p>Agent: {{ property.agent.name }}</p>
-    <pre>
-        {{ dump(value) }}
-    </pre>
+    <pre>{{ dump(value) }}</pre>
+
+<hr>
+    <h1>Contact the agent</h1>
+    {{ form_start(form) }}
+    {{ form_row(form.name) }}
+    {{ form_row(form.email) }}
+    {{ form_row(form.phone) }}
+    {{ form_row(form.message) }}
+    <button type="submit">Send Message</button>
+    {{ form_end(form) }}
 {% endblock %}

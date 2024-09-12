@@ -6,9 +6,12 @@ namespace App\Service\GeoCoding;
 
 use App\DataTransferObject\GeoCodingResponse;
 use App\Service\GeoCoding\GeoCodingInterface;
+use Psr\Log\LoggerInterface;
 
 class GeoApify implements GeoCodingInterface
 {
+    private LoggerInterface $logger;
+
     public function lookup($address, $city, $state, $zipCode, $country): GeoCodingResponse {
         $handle = curl_init();
 
@@ -31,7 +34,7 @@ class GeoApify implements GeoCodingInterface
                 $response = curl_exec($handle);
                 $retry++;
             }
-            // $logger->error("cURL error: ". curl_strerror($errno));
+            $this->logger->error("cURL error: ". curl_strerror($errno));
         }
 
         $body = json_decode($response, true);
@@ -45,4 +48,9 @@ class GeoApify implements GeoCodingInterface
             $body['features'][0]['properties']['rank']['confidence_city_level'] ?? null
         );
     }
+
+    public function setLogger(LoggerInterface $logger) {
+        $this->logger = $logger;
+    }
+
 }

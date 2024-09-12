@@ -317,18 +317,6 @@ class Property
         return $this;
     }
 
-    public function getBroker(): ?User
-    {
-        return $this->broker;
-    }
-
-    public function setBroker(?User $broker): static
-    {
-        $this->broker = $broker;
-
-        return $this;
-    }
-
     public function getAgent(): ?User
     {
         return $this->agent;

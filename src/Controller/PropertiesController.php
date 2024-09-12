@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Property;
+use App\Form\ContactAgentFormType;
 use App\Message\Command\SaveInquiry;
 use App\Message\ContactAgentNotification;
 use App\Service\Property\PropertyValuation;
 use App\Repository\PropertyRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
@@ -33,9 +35,24 @@ class PropertiesController extends AbstractController
         ]);
     }
 
-    #[Route('/properties/{id}', methods: ['GET'], name: 'show_property')]
-    public function show($id): Response {
+    #[Route('/properties/{id}', methods: ['GET', 'POST'], name: 'show_property')]
+    public function show($id, Request $request, MessageBusInterface $bus): Response {
         $property = $this->propertyRepository->find($id);
+
+        $form = $this->createForm(ContactAgentFormType::class);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $formData = $form->getData();
+
+            $bus->dispatch(new ContactAgentNotification($formData->getName()));
+
+            $this->entityManager->persist($formData);
+            $this->entityManager->flush();
+
+            return $this->redirectToRoute('contact_agent');
+        }
 
         $cache = new FilesystemAdapter();
 
@@ -46,28 +63,29 @@ class PropertiesController extends AbstractController
 
         return $this->render('/property/show.html.twig', [
             'property' => $property,
-            'value' => $value
+            'value' => $value,
+            'form' => $form
         ]);
     }
 
     #[Route('/contact', name: 'contact_agent')]
     public function contact(MessageBusInterface $bus): Response {
         // Serialization of 'class@anonymous' is not allowed
-        $notification = new class {
-            public function getId(): int {
-                return 37;
-            }
+        // $notification = new class {
+        //     public function getId(): int {
+        //         return 37;
+        //     }
 
-            public function getAgent(): object {
-                return new class {
-                    public function getEmail(): string {
-                        return 'paolo_catalan@yahoo.com';
-                    }
-                };
-            }
-        };
+        //     public function getAgent(): object {
+        //         return new class {
+        //             public function getEmail(): string {
+        //                 return 'paolo_catalan@yahoo.com';
+        //             }
+        //         };
+        //     }
+        // };
 
-        $bus->dispatch(new ContactAgentNotification($notification->getId()));
+        // $bus->dispatch(new ContactAgentNotification($notification->getId()));
 
         return $this->render('contact/index.html.twig');
     }

@@ -21,7 +21,7 @@ class ContactAgentNotificationHandler
         $mpdf = new Mpdf();
 
         $content = "<h1>Letter of Guarantee</h1>";
-        $content .= "For Buyer ID: Using Working Now";
+        $content .= "For Buyer ID: Using Working Now " . $notification->getName();
 
         $mpdf->WriteHTML($content);
         $propertyDocuments = $mpdf->Output('', 'S');
@@ -30,7 +30,7 @@ class ContactAgentNotificationHandler
         $email = (new Email())
                     ->from('onboarding@resend.dev')
                     ->to('paolo_catalan@yahoo.com')
-                    ->subject('Contract note for message ID : '. $notification->getNotificationId())
+                    ->subject('Contract note for message ID : ' . $notification->getName())
                     ->text('Here is your contract note. Using Working Now')
                     ->attach($propertyDocuments, 'property-documents.pdf');
 
