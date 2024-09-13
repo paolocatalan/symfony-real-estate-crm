@@ -59,7 +59,11 @@ class PropertiesController extends AbstractController
     }
 
     #[Route('/market-insights/{id}', name: 'market_insights')]
-    public function fetch($id): JsonResponse {
+    public function fetch($id, Request $request): JsonResponse {
+        if (!$request->headers->has('HX-request')) {
+            return $this->json(['error' => 'Unauthorized.'], 403);
+        }
+
         $property = $this->propertyRepository->find($id);
         $cache = new FilesystemAdapter();
 

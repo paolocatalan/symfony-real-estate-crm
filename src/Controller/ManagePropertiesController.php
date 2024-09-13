@@ -88,9 +88,9 @@ class ManagePropertiesController extends AbstractController
                 $form->get('zip_code')->getData(),
                 $form->get('country')->getData()
             );
-        } catch (\Throwable $e) {
+        } catch (\Throwable $th) {
             // $logger->error($e->getMessage());
-            $this->addFlash('message', $e->getMessage() . '. Please try again later.');
+            $this->addFlash('message', $th->getMessage() . '. Please try again later.');
             return $this->redirectToRoute('properties');
         }
 
@@ -105,7 +105,7 @@ class ManagePropertiesController extends AbstractController
             return $this->redirectToRoute('add_property', ['step' => self::CREATE_PROPERTY_STEP_ONE]);
         }
 
-        // Google returns OK in special characters address, returning null
+        // Google returns OK in special characters address, sometimes also status returns null but with results. weird
         // if ($geoCodeResponse->status !== "OK") {
         //     match ($geoCodeResponse->status) {
         //         'ZERO_RESULTS' => $this->addFlash('message', 'No results found.'),
