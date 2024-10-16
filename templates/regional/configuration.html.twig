@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Regional Settings{% endblock %}
+
+{% block body %}
+    <h1>Regional Settings</h1>
+    {{ form_start(regionalConfigurationFilter) }}
+        {{ form_row(regionalConfigurationFilter.timezone) }}
+        {{ form_row(regionalConfigurationFilter.currency) }}
+        {{ form_row(regionalConfigurationFilter.locale) }}
+        <button type="submit" class="btn">Save</button>
+    {{ form_end(regionalConfigurationFilter) }}
+{% endblock %}

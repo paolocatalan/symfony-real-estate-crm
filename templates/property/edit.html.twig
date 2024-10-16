@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Property: {{ property.id }}{% endblock %}
+
+{% block body %}
+    <h1>Edit Property: {{ property.id }}</h1>
+
+    {{ form_start(form) }}
+    {{ form_widget(form) }}
+    <button type="submit">Submit Property</button>
+    {{ form_end(form) }}
+    
+    <br>
+    <br>
+
+    {% if property is defined %}
+        <a href="{{ path('delete_property', {id: property.getId}) }}">Delete</a>
+    {% endif %}
+{% endblock %}

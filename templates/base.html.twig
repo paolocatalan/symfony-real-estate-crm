@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Welcome!{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+        <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+        {% block stylesheets %}
+        {% endblock %}
+
+        {% block javascripts %}
+        {% endblock %}
+    </head>
+    <body>
+    <div hx-boost="true">
+        <a href="/"
+            hx-get="/" 
+            hx-target="body"
+        >Home</a> |
+        <a href="{{ path('properties') }}"
+            hx-get="{{ path('properties') }}" 
+            hx-target="body"
+        >Properties</a> |
+        <a href="{{ path('regional_settings') }}"
+            hx-get="{{ path('regional_settings') }}" 
+            hx-trigger="click" 
+            hx-target="body"
+        >Regional Settings</a>
+        |
+        {% if app.user %}
+            <span>
+                You are logged in as {{ app.user.userIdentifier }}, <a href="{{ path('app_logout') }}">Logout</a>
+            </span>
+        {% endif %}
+    </div>
+    {% for message in app.flashes('message') %}
+        <p><em>{{ message }}</em></p>
+    {% endfor %}
+    {% block body %}{% endblock %}
+  </body>
+</html>
