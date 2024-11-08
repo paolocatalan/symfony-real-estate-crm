@@ -4,18 +4,16 @@ namespace App\Controller;
 
 use App\Entity\Property;
 use App\Form\ContactAgentFormType;
+use App\Form\PropertyFormType;
 use App\Message\ContactAgentNotification;
-use App\Service\Property\PropertyValuation;
 use App\Repository\PropertyRepository;
+use App\Service\ImageUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Contracts\Cache\ItemInterface;
 
 class PropertiesController extends AbstractController
 {
@@ -62,43 +60,49 @@ class PropertiesController extends AbstractController
     /**
      * @param mixed $id
      */
-    #[Route('/market-insights/{id}', name: 'market_insights')]
-    public function fetch($id, Request $request): JsonResponse {
-        if (!$request->headers->has('HX-request')) {
-            return $this->json(['error' => 'Unauthorized.'], 403);
+    #[Route('/properties/{id}/edit', name: 'edit_property')]
+    public function edit($id, Request $request, ImageUploader $imageUploader): Response {
+        $property = $this->propertyRepository->find($id);
+        $form = $this->createForm(PropertyFormType::class, $property);
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $newProperty = $form->getData();
+
+            /** @var UploadedFile */
+            $imagePath = $form->get('image_path')->getData();
+            if ($imagePath) {
+                $newFileName = $imageUploader->upload($imagePath);
+                $newProperty->setImagePath($newFileName);
+            }
+
+            $this->entityManager->persist($newProperty);
+            $this->entityManager->flush();
+
+            $this->addFlash('message', 'Property updated successfully.');
+
+            return $this->redirectToRoute('properties');
         }
 
-        $property = $this->propertyRepository->find($id);
-        $cache = new FilesystemAdapter();
-
-        $value = $cache->get('property_'. $id .'_value', function (ItemInterface $item) use ($property): array {
-            $item->expiresAfter(3600);
-            return (new PropertyValuation($property))->calculate();
-        });
-
-        return $this->json($value);
+        return $this->render('/property/edit.html.twig', [
+            'property' => $property,
+            'form' => $form->createView()
+        ]);
     }
 
-    #[Route('/contact', name: 'contact_agent')]
-    public function contact(MessageBusInterface $bus): Response {
-        // Serialization of 'class@anonymous' is not allowed
-        // $notification = new class {
-        //     public function getId(): int {
-        //         return 37;
-        //     }
+    /**
+     * @param mixed $id
+     */
+    #[Route('/properties/{id}/delete', methods: ['GET', 'DELETE'], name: 'delete_property')]
+    public function destroy($id): Response {
+        $property = $this->propertyRepository->find($id);
 
-        //     public function getAgent(): object {
-        //         return new class {
-        //             public function getEmail(): string {
-        //                 return 'paolo_catalan@yahoo.com';
-        //             }
-        //         };
-        //     }
-        // };
+        $this->entityManager->remove($property);
+        $this->entityManager->flush();
 
-        // $bus->dispatch(new ContactAgentNotification($notification->getId()));
+        $this->addFlash('message', 'Property deleted successfully.');
 
-        return $this->render('contact/index.html.twig');
+        return $this->redirectToRoute('properties');
     }
 
 }

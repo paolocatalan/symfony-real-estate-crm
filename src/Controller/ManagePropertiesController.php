@@ -7,12 +7,10 @@ use App\DataTransferObject\PropertyLocation;
 use App\Entity\User;
 use App\Factory\PropertyFactory;
 use App\Form\PropertyCharacteristicsFormType;
-use App\Form\PropertyFormType;
 use App\Form\PropertyLocationFormType;
 use App\Service\GeoCoding\GeoCodingInterface;
 use App\Repository\PropertyRepository;
 use App\Service\ImageUploader;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,7 +26,6 @@ class ManagePropertiesController extends AbstractController
 
     public function __construct(
         private readonly PropertyRepository $propertyRepository,
-        private readonly EntityManagerInterface $entityManager,
         private readonly RequestStack $requestStack,
         private readonly PropertyFactory $propertyFactory,
         private readonly GeoCodingInterface $geoApify
@@ -148,45 +145,4 @@ class ManagePropertiesController extends AbstractController
         return $this->redirectToRoute('properties');
     }
 
-    #[Route('/properties/{id}/edit', name: 'edit_property')]
-    public function edit($id, Request $request, ImageUploader $imageUploader): Response {
-        $property = $this->propertyRepository->find($id);
-        $form = $this->createForm(PropertyFormType::class, $property);
-
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            $newProperty = $form->getData();
-
-            /** @var UploadedFile */
-            $imagePath = $form->get('image_path')->getData();
-            if ($imagePath) {
-                $newFileName = $imageUploader->upload($imagePath);
-                $newProperty->setImagePath($newFileName);
-            }
-
-            $this->entityManager->persist($newProperty);
-            $this->entityManager->flush();
-
-            $this->addFlash('message', 'Property updated successfully.');
-
-            return $this->redirectToRoute('properties');
-        }
-
-        return $this->render('/property/edit.html.twig', [
-            'property' => $property,
-            'form' => $form->createView()
-        ]);
-    }
-
-    #[Route('/properties/{id}/delete', methods: ['GET', 'DELETE'], name: 'delete_property')]
-    public function delete($id): Response {
-        $property = $this->propertyRepository->find($id);
-
-        $this->entityManager->remove($property);
-        $this->entityManager->flush();
-
-        $this->addFlash('message', 'Property deleted successfully.');
-
-        return $this->redirectToRoute('properties');
-    }
 }
